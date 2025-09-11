@@ -43,7 +43,7 @@ DS_ws/
 - numpy
 - pyserial（串口通信）
 - HIK SDK（海康相机驱动，需单独安装）
-- （若使用 YOLO 或深度模型）相应的深度学习依赖（如 torch / torchvision / yolov5 等）
+- 使用YoloV11预训练数字识别模型，将pt转onnx再转bin（RDK_BIN专用工具链格式）
 
 示例安装（仅基础库）：
 ```bash
@@ -56,7 +56,5 @@ pip install opencv-python numpy pyserial pyyaml
 ## 配置
 - 标定文件：calibration_results/camera_calibration.yaml（程序会读取用于去畸变与内参）
 - 串口、相机参数在 main.py 或 HIK_CAM.py 中设置，建议先检查并修改对应的端口号与分辨率参数
-
-
 
 //
