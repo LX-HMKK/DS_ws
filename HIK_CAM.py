@@ -4,7 +4,7 @@ import time
 import cv2
 import numpy as np
 from ctypes import *
-sys.path.append("D:/SoftwareOfStudy/MVS/MVS/Development/Samples/Python/MvImport")
+sys.path.append("your SDK path/MvImport")  # 修改为你的SDK路径
 from MvCameraControl_class import *
 
 class HikIndustrialCamera:
