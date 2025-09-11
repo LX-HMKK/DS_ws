@@ -1,25 +1,24 @@
+// ...existing code...
 # DS_ws
 
-25电赛C题的视觉工作空间
-在RDKx5上实现，调用其BPU加速模型
+基于单目视觉的目标物测量工作空间（25 电赛 C 题实现），在 RDKx5 上可调用其 BPU 加速模型。
 
-## 项目概述
-
-实现了：
-1. 海康相机的调用
-2. 单目相机的标定&畸变
-3. 稳定识别黑色矩形框(A4+2厘米边缘)，引入简化的卡尔曼滤波优化动态效果
-4. 针对基础题、拓展题的内容，降框内识别分为三个识别器：
-    4.1. 边长识别器：识别边长计算直径（三角形、正方形、圆形）
-    4.2. 数字识别器：先识别矩形，再yolo识别数字，计算数字外的正方形边长
-    4.3. 内切圆识别器：先识别黑色图形，再画出内切圆，每个内切圆满足切两条边以上，获得最小直径
-5. 主函数实现串口通信，切换识别器
+## 主要功能
+- 调用海康相机采集图像
+- 单目相机标定与畸变校正
+- 稳定识别黑色矩形框（A4 + 2 cm 边缘），并使用简化卡尔曼滤波提升动态稳定性
+- 三种识别器：
+  - 边长识别器：根据边长判断并计算直径（支持三角形 / 正方形 / 圆形）
+  - 数字识别器：先检测矩形，再用 YOLO/分类识别数字，同时计算数字外的正方形边长
+  - 内切圆识别器：识别黑色图形并拟合内切圆，取满足条件的最小直径
+- 主程序支持串口通信与识别器切换
 
 ## 项目结构
+
+```text
 DS_ws/
 ├── README.md
 ├── DS_start.sh
-
 ├── calibration.py
 ├── detect.py
 ├── find_all.py
@@ -31,21 +30,33 @@ DS_ws/
 ├── send_data.py
 ├── __pycache__/
 │   ├── detect.cpython-312.pyc
-│   ├── find_shape.cpython-312.pyc
-│   ├── find_shape2.cpython-312.pyc
-│   ├── find_shape3.cpython-312.pyc
-│   ├── HIK_CAM.cpython-312.pyc
-│   ├── new_find_minSquare.cpython-312.pyc
-│   └── UKF.cpython-312.pyc
+│   └── ...
 ├── calibration_results/
 │   └── camera_calibration.yaml
-├── DOCS/
-│   └── C题_基于单目视觉的目标物测量装置.pdf
 └── include/
     └── CameraParams_header.py
+```
 
-## 环境配置
-python==3
-    openCV==4
-    Serial
-HIK_SDK
+## 环境与依赖（建议）
+- Python 3.8+
+- OpenCV 4.x
+- numpy
+- pyserial（串口通信）
+- HIK SDK（海康相机驱动，需单独安装）
+- （若使用 YOLO 或深度模型）相应的深度学习依赖（如 torch / torchvision / yolov5 等）
+
+示例安装（仅基础库）：
+```bash
+python -m pip install --upgrade pip
+pip install opencv-python numpy pyserial pyyaml
+```
+
+备注：HIK_SDK 与相机驱动需按照厂商说明单独安装配置；在 RDKx5 上使用 BPU 时需根据设备提供的 SDK / 接口配置。
+
+## 配置
+- 标定文件：calibration_results/camera_calibration.yaml（程序会读取用于去畸变与内参）
+- 串口、相机参数在 main.py 或 HIK_CAM.py 中设置，建议先检查并修改对应的端口号与分辨率参数
+
+
+
+//
