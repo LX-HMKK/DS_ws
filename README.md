@@ -1,59 +1,65 @@
 # DS_ws
 
-基于单目视觉的目标物测量工作空间（25 电赛 C 题实现），在 RDKx5 上可调用其 BPU 加速模型。
+基于单目视觉的目标物测量工作空间，用于海康工业相机采集、相机标定、矩形框检测、形状/数字/内切圆测量，以及串口通信。
 
-## 主要功能
-- 调用海康相机采集图像
-- 单目相机标定与畸变校正
-- 稳定识别黑色矩形框（A4 + 2 cm 边缘），并使用简化卡尔曼滤波提升动态稳定性
-- 三种识别器：
-  - 边长识别器：根据边长判断并计算直径（支持三角形 / 正方形 / 圆形）
-  - 数字识别器：先检测矩形，再用 YOLO/分类识别数字，同时计算数字外的正方形边长
-  - 内切圆识别器：识别黑色图形并拟合内切圆，取满足条件的最小直径
-- 主程序支持串口通信与识别器切换
-
-## 项目结构
+## 目录结构
 
 ```text
 DS_ws/
-├── README.md
 ├── DS_start.sh
-├── calibration.py
-├── detect.py
-├── find_all.py
-├── find_minSquare.py
-├── find_numSquare.py
-├── get_rgb.py
-├── HIK_CAM.py
-├── main.py
-├── send_data.py
-├── __pycache__/
-│   ├── detect.cpython-312.pyc
-│   └── ...
-├── calibration_results/
+├── README.md
+├── configs/
+│   ├── app.yaml
 │   └── camera_calibration.yaml
-└── include/
-    └── CameraParams_header.py
+├── drivers/
+│   ├── send_data.py
+│   └── hikrobot/
+│       ├── HIK_CAM.py
+│       ├── include/
+│       └── lib/
+│           ├── amd64/libMvCameraControl.so
+│           └── arm64/libMvCameraControl.so
+├── modules/
+│   ├── detect.py
+│   ├── find_all.py
+│   ├── find_minSquare.py
+│   ├── find_numSquare.py
+│   └── get_rgb.py
+├── scripts/
+│   ├── _bootstrap.py
+│   ├── calibration.py
+│   └── main.py
+├── tools/
+│   ├── config_loader.py
+│   └── hikrobot_paths.py
+└── tests/
 ```
 
-## 环境与依赖（建议）
-- Python 3.8+
-- OpenCV 4.x
-- numpy
-- pyserial（串口通信）
-- HIK SDK（海康相机驱动，需单独安装）
-- 使用YoloV11预训练数字识别模型，将pt转onnx再转bin（RDK_BIN专用工具链格式）
+## 配置
 
-示例安装（仅基础库）：
+- 运行配置：`configs/app.yaml`
+- 标定参数：`configs/camera_calibration.yaml`
+- Linux 海康运行库：`drivers/hikrobot/lib/<arch>/libMvCameraControl.so`
+- 如需覆盖海康库路径，可设置 `HIK_MVS_LIBRARY`
+- 如需覆盖运行配置文件，可设置 `DS_CONFIG_PATH`
+
+## 启动
+
+```bash
+python3 scripts/main.py
+```
+
+或使用：
+
+```bash
+bash DS_start.sh
+```
+
+## 依赖
+
 ```bash
 python -m pip install --upgrade pip
 pip install opencv-python numpy pyserial pyyaml
 ```
 
-备注：HIK_SDK 与相机驱动需按照厂商说明单独安装配置；在 RDKx5 上使用 BPU 时需根据设备提供的 SDK / 接口配置。
-
-## 配置
-- 标定文件：calibration_results/camera_calibration.yaml（程序会读取用于去畸变与内参）
-- 串口、相机参数在 main.py 或 HIK_CAM.py 中设置，建议先检查并修改对应的端口号与分辨率参数
-
-//
+数字识别依赖 RDK/BPU 环境中的 `hobot_dnn`，需要在目标设备上验证。

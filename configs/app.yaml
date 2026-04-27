@@ -1,0 +1,30 @@
+camera:
+  exposure_auto: false
+  exposure_time: 8000.0
+  frame_timeout_ms: 1000
+
+calibration:
+  result_file: configs/camera_calibration.yaml
+  image_output_dir: calibration_images
+  chessboard_size: [11, 8]
+  square_size: 30.0
+  min_images: 15
+  crop: [124, 1924, 324, 2124]
+
+measurement:
+  rect_width_mm: 170
+  rect_height_mm: 267
+  camera_offset_mm: -90.0
+
+model:
+  digit_model_path: DS_NUM.bin
+  conf_thres: 0.30
+  iou_thres: 0.6
+
+serial:
+  choice:
+    port: /dev/ttyS1
+    baudrate: 115200
+  power:
+    port: /dev/ttyS3
+    baudrate: 115200
