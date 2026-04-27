@@ -1,18 +1,27 @@
 #!/user/bin/env python
 
-import cv2
-import numpy as np
-import math
-from scipy.special import softmax
-from hobot_dnn import pyeasy_dnn as dnn
-from time import time
 import argparse
 import logging
-import sys
-import signal
+import math
 import os
+import signal
+import sys
+from pathlib import Path
+from time import time
+
+import cv2
+import numpy as np
 import serial
 import serial.tools.list_ports
+from hobot_dnn import pyeasy_dnn as dnn
+from scipy.special import softmax
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+for path in (PROJECT_ROOT, PROJECT_ROOT / "modules", PROJECT_ROOT / "tools"):
+    path_str = str(path)
+    if path_str not in sys.path:
+        sys.path.insert(0, path_str)
+
 from drivers.hikrobot.HIK_CAM import HikIndustrialCamera
 from tools.config_loader import load_app_config
 

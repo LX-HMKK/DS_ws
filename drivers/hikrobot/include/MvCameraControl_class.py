@@ -8,10 +8,10 @@ import ctypes
 
 from ctypes import *
 
-from io.hikrobot.include.PixelType_header import *
-from io.hikrobot.include.CameraParams_const import *
-from io.hikrobot.include.CameraParams_header import *
-from io.hikrobot.include.MvErrorDefine_const import *
+from PixelType_header import *
+from CameraParams_const import *
+from CameraParams_header import *
+from MvErrorDefine_const import *
 
 # Python3.8版本修改Dll加载策略, 默认不再搜索Path环境变量, 同时增加winmode参数以兼容旧版本
 def _load_mvs_library():
