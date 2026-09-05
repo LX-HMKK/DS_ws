@@ -17,12 +17,7 @@ class ShapeDetector:
         self.area_ratio_threshold = area_ratio_threshold
         self.frame_real_width = frame_real_width
         self.frame_real_height = frame_real_height
-        
-    def set_real_frame_size(self, width, height):
-        """设置截取区域的真实尺寸"""
-        self.frame_real_width = width
-        self.frame_real_height = height
-        
+
     def detect_shape(self, frame):
         """
         执行形状识别
@@ -91,8 +86,6 @@ class ShapeDetector:
                 shape_type = "circle"
                 pixel_size = 2 * radius  # 直径
                 cv2.circle(output_frame, (int(x), int(y)), int(radius), (0, 255, 0), 1)
-                # cv2.putText(output_frame, f"Circle D={pixel_size:.1f}px", 
-                #            (int(x)-40, int(y)), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 255, 0), 1)
                 cv2.putText(output_frame, f"{shape_type}", 
                            (int(x)-40, int(y)), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 255, 0), 1)
                 cv2.putText(output_frame, f"D={pixel_size:.1f}px", 
@@ -104,8 +97,6 @@ class ShapeDetector:
                 pixel_size = (rect_width + rect_height) / 2
                 box = cv2.boxPoints(rect).astype(np.int32)
                 cv2.drawContours(output_frame, [box], 0, (0, 255, 0), 2)
-                # cv2.putText(output_frame, f"Square D={pixel_size:.1f}px", 
-                #            (int(rx)-40, int(ry)), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 255, 0), 1)
                 cv2.putText(output_frame, f"{shape_type}", 
                            (int(rx)-40, int(ry)), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 255, 0), 1)
                 cv2.putText(output_frame, f"D={pixel_size:.1f}px", 
@@ -117,8 +108,6 @@ class ShapeDetector:
                 dists = [np.linalg.norm(approx[i][0] - approx[(i+1)%3][0]) for i in range(3)]
                 pixel_size = np.mean(dists)
                 cv2.drawContours(output_frame, [approx], -1, (0, 255, 0), 2)
-                # cv2.putText(output_frame, f"Triangle D={pixel_size:.1f}px", 
-                #            (int(rx)-40, int(ry)), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 255, 0),1)
                 cv2.putText(output_frame, f"{shape_type}", 
                            (int(rx)-40, int(ry)), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 255, 0),1)
                 cv2.putText(output_frame, f"D={pixel_size:.1f}px", 
@@ -140,12 +129,8 @@ class ShapeDetector:
             # 如果检测到形状但未设置真实尺寸，返回0.0
             result["size"] = 0.0
             result["shape"] = shape_type
-            # cv2.putText(output_frame, "Real size not calibrated", 
-            #            (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 0, 0), 1)
         
         # 显示面积占比
-        # cv2.putText(output_frame, f"Area Ratio: {shape_area_ratio:.2%}", 
-        #            (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 255), 1)
         
         return result, output_frame
 

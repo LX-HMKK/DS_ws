@@ -14,7 +14,7 @@ from drivers.hikrobot.HIK_CAM import HikIndustrialCamera
 from drivers.send_data import SerialPort
 from modules.detect import RectangleDetector
 from modules.find_all import ShapeDetector
-from modules.find_minSquare import CircleDetector
+from modules.find_minSquare import MinSquareDetector
 from modules.find_numSquare import YOLO11_Detector
 from tools.config_loader import load_app_config
 
@@ -103,7 +103,7 @@ def main():
         frame_real_width=rect_width,
         frame_real_height=rect_height,
     )
-    find_minS = CircleDetector(min_area_ratio=0.05, max_area_ratio=0.95)
+    find_minS = MinSquareDetector(world_width=rect_width, world_height=rect_height)
     find_numS = YOLO11_Detector(
         model_path=model_config.get("digit_model_path", "DS_NUM.bin"),
         conf_thres=float(model_config.get("conf_thres", 0.30)),
@@ -171,7 +171,7 @@ def main():
                             current_detector_name = "Shape"
                             show_output = True
                         elif "bs" in middle_data:
-                            current_detector = find_minS.find_min_square_side
+                            current_detector = find_minS.detect
                             current_detector_name = "Min Square"
                             show_output = True
                         elif "d" in middle_data:
@@ -227,9 +227,9 @@ def main():
                 if show_output and current_detector:
                     try:
                         if current_detector == find_all.detect_shape:
-                            size_val, _ = current_detector(warped)
-                            size_info = f"D: {size_val:.1f}mm"
-                        elif current_detector == find_minS.find_min_square_side:
+                            result, _ = current_detector(warped)
+                            size_info = f"D: {result['size']:.1f}mm"
+                        elif current_detector == find_minS.detect:
                             _, size_min = current_detector(warped)
                             size_info = f"D: {size_min:.1f}mm" if size_min is not None else "D: N/A"
                         elif current_detector == find_numS.process_frame:

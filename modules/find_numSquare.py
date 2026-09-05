@@ -3,16 +3,12 @@
 import argparse
 import logging
 import math
-import os
-import signal
 import sys
 from pathlib import Path
 from time import time
 
 import cv2
 import numpy as np
-import serial
-import serial.tools.list_ports
 from hobot_dnn import pyeasy_dnn as dnn
 from scipy.special import softmax
 

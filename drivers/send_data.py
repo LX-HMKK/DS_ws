@@ -1,6 +1,5 @@
 import serial
 import time
-import time
 import binascii
 
 class SerialPort:
@@ -40,7 +39,7 @@ class SerialPort:
         try:
             if data_format == 'str':
                 encoded_data = data.encode('utf-8')
-            elif data_format == 'str':
+            elif data_format == 'hex':
                 hex_str = data.replace(" ", "").replace("\n", "").replace("\r", "").replace("\t", "")
                 if len(hex_str) % 2 != 0:
                     raise ValueError("Hex string must have even number of characters")
@@ -111,14 +110,14 @@ class SerialPort:
 
     def set_formats(self, send_format: str = None, recv_format: str = None):
         if send_format:
-            if send_format in ('str', 'hex', 'bytes'):
+            if send_format in ('str', 'hex', 'bytes', 'ascii'):
                 self.default_send_format = send_format
                 print(f"set default send format : {send_format}")
             else:
                 print(f"useless send format: {send_format},set default")
         
         if recv_format:
-            if recv_format in ('str', 'hex', 'bytes'):
+            if recv_format in ('str', 'hex', 'bytes', 'ascii'):
                 self.default_recv_format = recv_format
                 print(f"set default recv format: {recv_format}")
             else:

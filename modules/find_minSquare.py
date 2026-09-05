@@ -91,6 +91,7 @@ class MinSquareDetector:
         # 4. 检测最小面积正方形
         result_image = frame.copy()
         min_square = None
+        real_length = None
         min_area = float('inf')
         
         # 遍历所有可能的角点对

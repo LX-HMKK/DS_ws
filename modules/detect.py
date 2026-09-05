@@ -1,7 +1,5 @@
 import cv2
 import numpy as np
-from scipy.spatial.distance import cdist
-from scipy.optimize import linear_sum_assignment
 from drivers.hikrobot.HIK_CAM import HikIndustrialCamera
 
 class RectangleDetector:
@@ -22,9 +20,6 @@ class RectangleDetector:
         self.subpix_criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 50, 0.05)
         self.subpix_window = (1, 1)  # 搜索窗口大小
         self.subpix_zero_zone = (-1, -1)  # 死区大小（通常设为-1,-1表示禁用）
-        self.prev_corners = None  # 存储上一帧角点
-        self.stabilization_threshold = 1.0  # 稳定阈值(像素距离)
-        self.min_contour_dist = 5  # 轮廓间最小距离(避免重复检测)
         self.kalman_filters = []  # 存储每个矩形的卡尔曼滤波器
 
     @staticmethod
@@ -156,22 +151,6 @@ class RectangleDetector:
             results.append(np.array(filtered_corners, dtype=np.float32))
 
         return results
-
-    def _is_similar_contour(self, cnt1, cnt2):
-        """检查两个轮廓是否相似"""
-        M1 = cv2.moments(cnt1)
-        M2 = cv2.moments(cnt2)
-        cx1 = int(M1["m10"] / M1["m00"])
-        cy1 = int(M1["m01"] / M1["m00"])
-        cx2 = int(M2["m10"] / M2["m00"])
-        cy2 = int(M2["m01"] / M2["m00"])
-        dist = np.sqrt((cx1 - cx2) **2 + (cy1 - cy2)** 2)
-
-        area1 = cv2.contourArea(cnt1)
-        area2 = cv2.contourArea(cnt2)
-        area_ratio = min(area1, area2) / max(area1, area2)
-
-        return dist < self.min_contour_dist and area_ratio > 0.8
 
 
 # ----------------- 主函数调用示例 -----------------
