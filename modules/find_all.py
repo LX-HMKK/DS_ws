@@ -46,7 +46,7 @@ class ShapeDetector:
             return result, output_frame
         
         # 处理最大轮廓
-        largest_contour = min(contours, key=cv2.contourArea)
+        largest_contour = max(contours, key=cv2.contourArea)
         area = cv2.contourArea(largest_contour)
         frame_area = frame.shape[0] * frame.shape[1]
         shape_area_ratio = area / frame_area if frame_area > 0 else 0

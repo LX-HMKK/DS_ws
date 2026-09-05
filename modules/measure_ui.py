@@ -575,12 +575,18 @@ class MeasurementUI(tk.Tk):
         return img
 
     def _show_empty_page(self, text):
-        """无帧时显示占位图；A4 面积模板只在原始/设置页叠加，变换页干净显示。"""
+        """无帧时显示占位图；A4 面积模板只在原始/设置页叠加，变换页干净显示。
+
+        占位图尺寸是视频容器（非整帧），故按当前百分比占「占位图自身面积」换算，
+        否则整帧 frame_area 会让 MIN/MAX 参考框在小画布上小到失真。
+        """
         ph = self._placeholder(text)
         if self.state.page in (PAGE_ORIGINAL, PAGE_SETTINGS):
-            draw_filter_template(
-                ph, self.state.min_area, self.state.max_area, self.state.frame_area
-            )
+            h, w = ph.shape[:2]
+            ph_area = w * h
+            pmin = int(self.state.min_area_pct / 100.0 * ph_area) if self.state.min_area_pct is not None else 0
+            pmax = int(self.state.max_area_pct / 100.0 * ph_area) if self.state.max_area_pct is not None else 0
+            draw_filter_template(ph, pmin, pmax, ph_area)
         self._show_frame(ph)
 
     # ---------- 保存 / 退出 ----------
@@ -598,8 +604,8 @@ class MeasurementUI(tk.Tk):
             cfg.setdefault("ui", {}).update(
                 page=self.state.page,
                 pnp_type=self.state.pnp_name,
-                rect_min_area=self.state.min_area,
-                rect_max_area=self.state.max_area,
+                rect_min_area_pct=self.state.min_area_pct,
+                rect_max_area_pct=self.state.max_area_pct,
                 debug=self.state.debug_mode,
             )
             with open(self.cfg_path, "w", encoding="utf-8") as f:

@@ -44,28 +44,32 @@ class UIState:
             self._frame_estimated = True
         self.frame_area = self.frame_w * self.frame_h
 
-        # 面积筛选：与整帧尺寸挂钩（默认下限 5%、上限 60% 帧面积）。
-        # 仅当配置里仍是旧的硬编码默认值(150000/3000000)时才用帧相对默认；
-        # 操作者手动调整并 SAVE 过的值会被保留。
-        cfg_min = int(ui_cfg.get("rect_min_area", 150000))
-        cfg_max = int(ui_cfg.get("rect_max_area", 3000000))
-        is_legacy = (cfg_min == 150000 and cfg_max == 3000000)
-        if self.frame_area:
-            if is_legacy:
-                self.min_area_pct = 5.0
-                self.max_area_pct = 60.0
-            else:
+        # 面积筛选：以「帧面积百分比」为权威值，随框架相对偏移、跨相机可迁移。
+        # 兼容历史绝对值键(rect_min_area/rect_max_area，像素)：仅当非默认值
+        # (150000/3000000)时按当前帧换算成百分比，否则用帧相对默认 5%/60%。
+        pct_min = ui_cfg.get("rect_min_area_pct")
+        pct_max = ui_cfg.get("rect_max_area_pct")
+        if pct_min is not None and pct_max is not None:
+            self.min_area_pct = float(pct_min)
+            self.max_area_pct = float(pct_max)
+        else:
+            cfg_min = int(ui_cfg.get("rect_min_area", 150000))
+            cfg_max = int(ui_cfg.get("rect_max_area", 3000000))
+            is_legacy = (cfg_min == 150000 and cfg_max == 3000000)
+            if self.frame_area and not is_legacy:
                 self.max_area_pct = min(100.0, cfg_max / self.frame_area * 100.0)
                 self.min_area_pct = min(self.max_area_pct, cfg_min / self.frame_area * 100.0)
+            else:
+                self.min_area_pct = 5.0
+                self.max_area_pct = 60.0
+        self.min_area_pct = max(0.0, min(100.0, self.min_area_pct))
+        self.max_area_pct = max(self.min_area_pct, min(100.0, self.max_area_pct))
+        if self.frame_area:
             self.min_area = int(round(self.min_area_pct / 100.0 * self.frame_area))
             self.max_area = int(round(self.max_area_pct / 100.0 * self.frame_area))
         else:
-            self.min_area_pct = None
-            self.max_area_pct = None
-            self.min_area = cfg_min
-            self.max_area = cfg_max
-            if self.min_area > self.max_area:
-                self.min_area, self.max_area = self.max_area, self.min_area
+            self.min_area = int(self.min_area_pct)
+            self.max_area = int(self.max_area_pct)
 
         # 运行时状态（非配置派生）
         self.current_task = None

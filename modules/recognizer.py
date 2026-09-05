@@ -52,15 +52,25 @@ class Recognizer:
         try:
             if task == TASK_SHAPE:
                 result, annotated = self.shape_detector.detect_shape(warped)
-                size = result.get("size", 0.0) or 0.0
                 label = result.get("shape", "unknown")
-                self._set(annotated, size, f"形状:{label}  D:{size:.1f}mm")
+                raw = result.get("size")
+                if raw:
+                    size = float(raw)
+                    tag = f"形状:{label}  D:{size:.1f}mm"
+                else:
+                    size = None
+                    tag = f"形状:{label}  D:N/A"
+                self._set(annotated, size, tag)
             elif task == TASK_MIN_SQUARE:
                 annotated, size = self.min_square_detector.detect(warped)
                 tag = f"最小方块  D:{size:.1f}mm" if size is not None else "最小方块  D:N/A"
                 self._set(annotated, size, tag)
             elif task == TASK_DIGIT:
                 self._submit_digit(warped, meta)
+                # 立即显示数码推理中，避免在 worker 出结果前残留上个任务的结果
+                cur = self.result()
+                if cur is None or not cur.get("tag", "").startswith("数字"):
+                    self._set(warped, None, "数字推理中...")
         except Exception as e:
             print(f"recognition error: {e}")
             self._set(None, None, f"识别错误:{e}")
