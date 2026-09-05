@@ -27,12 +27,16 @@ MonocularRangefinder-NUEDC2025/
 │           └── arm64/libMvCameraControl.so
 ├── modules/
 │   ├── detect.py
+│   ├── filter_template.py       # 帧上叠加 A4 面积筛选参照矩形
 │   ├── find_all.py
 │   ├── find_minSquare.py
 │   ├── find_numSquare.py
+│   ├── geometry.py              # 纯几何/位姿/帧标注函数
 │   ├── get_rgb.py
-│   ├── geometry.py
-│   └── measure_ui.py
+│   ├── measure_ui.py            # Tkinter 界面（薄控制器）
+│   ├── recognizer.py            # 识别编排 + 数字后台 worker
+│   ├── serial_protocol.py       # 串口帧解析
+│   └── ui_state.py              # 界面可变状态与配置同步
 ├── scripts/
 │   ├── _bootstrap.py
 │   ├── calibration.py

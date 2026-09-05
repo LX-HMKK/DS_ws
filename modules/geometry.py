@@ -13,6 +13,19 @@ import yaml
 # A4 纸张真实尺寸 mm = 210 × 297 -> 长宽比（宽高比取 max/min）
 A4_ASPECT = 297.0 / 210.0  # ≈ 1.414
 
+# A4 适宜性判定的英文缩写与对应显示颜色（OpenCV 画不了中文，用英文标注）
+VERDICT_EN = {"适宜": "FIT", "偏长": "TALL", "偏宽": "WIDE"}
+VERDICT_COLOR = {"适宜": (0, 255, 0), "偏长": (0, 200, 255), "偏宽": (255, 160, 0)}
+
+# solvePnP 求解方法 名称 -> OpenCV 常量
+PNP_FLAGS = {
+    "ITERATIVE": cv2.SOLVEPNP_ITERATIVE,
+    "EPNP": cv2.SOLVEPNP_EPNP,
+    "IPPE": cv2.SOLVEPNP_IPPE,
+    "DLS": cv2.SOLVEPNP_DLS,
+    "UPNP": cv2.SOLVEPNP_UPNP,
+}
+
 
 def read_camera_params(file_path):
     """从标定结果 yaml 读取内参矩阵与畸变系数。
@@ -149,3 +162,64 @@ def a4_suitability(aspect, area):
     else:
         verdict = "偏宽"
     return verdict, aspect
+
+
+def warp_to_plane(frame, corners, rect_width, rect_height):
+    """把纸板内框透视矫正为矩形平面图。
+
+    目标尺寸直接用 (rect_width, rect_height)（单位 mm），故 1px≈1mm，
+    三个识别器返回的尺寸即 mm。corners 为 4 个内角点 (4,2)。
+    """
+    src = np.asarray(corners, dtype=np.float32).reshape(4, 2)
+    dst = np.array(
+        [[0, 0], [rect_width, 0], [rect_width, rect_height], [0, rect_height]],
+        dtype=np.float32,
+    )
+    transform = cv2.getPerspectiveTransform(src, dst)
+    return cv2.warpPerspective(frame, transform, (rect_width, rect_height))
+
+
+def annotate_rect(frame, corners, obj_points, camera_matrix, distortion_coeffs,
+                  pnp_flag, camera_offset):
+    """在 frame 上画内角点、距离、YPR 与 A4 适宜性，并返回元信息。
+
+    纯函数（不依赖 Tk / 相机），所有输入均为参数；供 UI 与调试复用。
+    返回 dict：{'distance', 'ypr':(yaw,pitch,roll), 'verdict', 'aspect'}。
+    PnP 失败时返回各项为 None 的 dict，并在图上标 "PnP failed"。
+    """
+    meta = {"distance": None, "ypr": None, "verdict": None, "aspect": None}
+    corners32 = np.asarray(corners, dtype=np.float32).reshape(-1, 2)
+    for (x, y) in corners32:
+        cv2.circle(frame, (int(x), int(y)), 6, (0, 0, 255), -1)
+
+    success, distance, _rot_matrix, rvec = pnp_pose(
+        camera_matrix, distortion_coeffs, obj_points, corners32, flags=pnp_flag,
+    )
+    if not success:
+        cv2.putText(frame, "PnP failed", (10, 30),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+        return meta
+
+    distance_adj = camera_offset + distance
+    yaw, pitch, roll = extract_ypr(rvec)
+    meta["distance"] = distance_adj
+    meta["ypr"] = (yaw, pitch, roll)
+
+    x, y, w, h = cv2.boundingRect(corners32.astype(np.int32))
+    aspect = float(w) / h if h else 0.0
+    if aspect:
+        aspect = max(aspect, 1.0 / aspect)
+    verdict = a4_suitability(aspect, w * h)[0]
+    meta["verdict"] = verdict
+    meta["aspect"] = aspect
+
+    cx, cy = np.mean(corners32, axis=0).astype(int)
+    cv2.putText(frame, f"X:{distance_adj:.0f}mm", (cx, cy + 20),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
+    cv2.putText(frame, f"Y:{yaw:.1f} P:{pitch:.1f} R:{roll:.1f}",
+                (cx - 90, cy + 46), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 0), 2)
+    verdict_en = VERDICT_EN.get(verdict, verdict)
+    verdict_color = VERDICT_COLOR.get(verdict, (0, 255, 255))
+    cv2.putText(frame, f"A4:{verdict_en} {aspect:.2f}",
+                (cx - 90, cy + 70), cv2.FONT_HERSHEY_SIMPLEX, 0.6, verdict_color, 2)
+    return meta
