@@ -1,14 +1,19 @@
 # MonocularRangefinder-NUEDC2025
 
 基于单目视觉的目标物测量系统，面向 2025 年全国大学生电子设计竞赛 C 题。      
-用于海康工业相机采集、相机标定、矩形框检测、形状/数字/内切圆测量，以及串口通信。
+运行平台为地平线 RDK X5 开发板，相机采用海康机器人 CS050 系列工业相机，用于相机标定、矩形框检测、形状/数字/内切圆测量，以及串口通信。
 
 ## 目录结构
 
 ```text
-DS_ws/
+MonocularRangefinder-NUEDC2025/
 ├── DS_start.sh
 ├── README.md
+├── CHANGELOG.md
+├── LICENSE
+├── .gitignore
+├── DOCS/
+│   └── C题_基于单目视觉的目标物测量装置.pdf
 ├── configs/
 │   ├── app.yaml
 │   └── camera_calibration.yaml
@@ -34,6 +39,9 @@ DS_ws/
 │   ├── config_loader.py
 │   └── hikrobot_paths.py
 └── tests/
+    ├── test_config_loader.py
+    ├── test_hikrobot_paths.py
+    └── test_path_setup.py
 ```
 
 ## 配置
@@ -63,4 +71,8 @@ python -m pip install --upgrade pip
 pip install opencv-python numpy pyserial pyyaml
 ```
 
-数字识别依赖 RDK/BPU 环境中的 `hobot_dnn`，需要在目标设备上验证。
+数字识别依赖 RDK X5 的 BPU 环境中的 `hobot_dnn`，需要在目标设备（RDK X5）上验证。
+
+## 许可证
+
+本项目以 [MIT 许可证](LICENSE) 协议授权发布。
