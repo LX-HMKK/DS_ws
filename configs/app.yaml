@@ -21,6 +21,13 @@ model:
   conf_thres: 0.30
   iou_thres: 0.6
 
+ui:
+  page: original            # 初始页面：original 或 transformed
+  pnp_type: ITERATIVE       # solvePnP 方法：ITERATIVE/EPNP/IPPE/DLS/UPNP
+  rect_min_area: 150000     # 矩形外框面积筛选下限（像素）
+  rect_max_area: 3000000    # 矩形外框面积筛选上限（像素）
+  debug: false              # 无下位机模式（关闭串口，任务由 UI 选择）
+
 serial:
   choice:
     port: /dev/ttyS1

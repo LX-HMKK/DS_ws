@@ -6,7 +6,7 @@ class RectangleDetector:
     """
     在原图中寻找满足以下条件的矩形：
         1. 外轮廓为四边形
-        2. 面积 100000 ~ 3000000
+        2. 面积在 [min_area, max_area] 之间（默认 150000 ~ 3000000）
         3. 宽高比在 [1.2, 3.0] 之间
         4. 内部恰好有一个四边形内轮廓
     返回内轮廓的 4 个角点，顺时针排序。
@@ -16,6 +16,9 @@ class RectangleDetector:
         self.ratio_min = 1.2
         self.ratio_max = 3.0
         self.EPSILON_RATIO = 0.1
+        # 外框面积筛选阈值（像素），UI 滑块可实时调整
+        self.min_area = 150000
+        self.max_area = 3000000
         # 亚像素优化参数
         self.subpix_criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 50, 0.05)
         self.subpix_window = (1, 1)  # 搜索窗口大小
@@ -72,7 +75,7 @@ class RectangleDetector:
                 continue
 
             area = cv2.contourArea(cnt)
-            if area < 150000 or area > 3000000:
+            if area < self.min_area or area > self.max_area:
                 continue
 
             epsilon = 0.05 * cv2.arcLength(cnt, True)

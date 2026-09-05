@@ -30,7 +30,9 @@ MonocularRangefinder-NUEDC2025/
 │   ├── find_all.py
 │   ├── find_minSquare.py
 │   ├── find_numSquare.py
-│   └── get_rgb.py
+│   ├── get_rgb.py
+│   ├── geometry.py
+│   └── measure_ui.py
 ├── scripts/
 │   ├── _bootstrap.py
 │   ├── calibration.py
@@ -40,8 +42,7 @@ MonocularRangefinder-NUEDC2025/
 │   └── hikrobot_paths.py
 └── tests/
     ├── test_config_loader.py
-    ├── test_hikrobot_paths.py
-    └── test_path_setup.py
+    └── test_hikrobot_paths.py
 ```
 
 ## 配置
@@ -58,20 +59,38 @@ MonocularRangefinder-NUEDC2025/
 python3 scripts/main.py
 ```
 
+调试模式（无下位机 / 关串口，识别任务由界面自由选择）：
+
+```bash
+python3 scripts/main.py --debug
+```
+
 或使用：
 
 ```bash
 bash DS_start.sh
 ```
 
+## 界面说明
+
+Tkinter 多页界面，随相机实时刷新：
+
+- **原始(1)**：相机原帧 + 检测到的矩形外框，标注 PnP 解算的距离（含补偿）、YPR 角度（偏离水平/竖直面）以及 A4 比例适宜性。
+- **变换(2)**：透视矫正后的内框图 + 识别结果（形状/最小方块/数字 与尺寸，单位 mm）。
+- 滑块补偿：距离偏移 `camera_offset_mm`、内框真实宽高 `rect_width_mm`/`rect_height_mm`，以及面积筛选上下限。
+- **PnP** 下拉框可选 `ITERATIVE/EPNP/IPPE/DLS/UPNP`。
+- **DEBUG** 按钮切换无串口模式：关闭串口收发，识别任务用顶部单选按钮自由选择（数字可在旁边指定 0-9 或自动）。
+- `SAVE` 保存当前补偿/尺寸/PnP 类型到 `configs/app.yaml`；`EXIT` 或 `q`/`ESC` 退出。
+
 ## 依赖
 
 ```bash
 python -m pip install --upgrade pip
-pip install opencv-python numpy pyserial pyyaml
+pip install opencv-python numpy pyserial pyyaml scipy pillow
 ```
 
-数字识别依赖 RDK X5 的 BPU 环境中的 `hobot_dnn`，需要在目标设备（RDK X5）上验证。
+- 界面使用 Tkinter，Linux 需 `apt-get install python3-tk`；`pillow` 用于在 Tk 中显示图像。
+- 数字识别依赖 RDK X5 的 BPU 环境中的 `hobot_dnn`，需要在目标设备（RDK X5）上验证；无 BPU 时数字任务显示「模型不可用」，其余识别不受影响。
 
 ## 许可证
 
